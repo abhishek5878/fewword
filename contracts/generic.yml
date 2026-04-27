@@ -1,0 +1,14 @@
+# TrajEval generic contract pack, safe defaults for any agent.
+# Use this when `trajeval suggest` can't confidently recommend a
+# vertical pack (e.g. research/code/custom agents with no domain
+# keywords in their tool names).
+#
+# Only universal checks live here: retry storms, identical-tool
+# repetition, stop-on-error, and PII leakage. No banned_tools,
+# required_tools, schemas, gates, or contracts, add those when
+# you know what your agent is supposed to do.
+
+max_tool_repeat: 20
+max_retries: 10
+stop_on_error: true
+check_pii: true

@@ -1,0 +1,10 @@
+# Example: require a validation step before a payment action.
+# The dispatcher cannot fire `send_payment` until `verify_card`
+# shows up in the trace. If the agent is lazy, the shortcut is
+# blocked by the contract, not by a prompt.
+
+requires_prior_work:
+  send_payment:
+    required: [verify_card]
+  send_policy_reply:
+    required: [lookup_official_policy]

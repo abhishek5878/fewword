@@ -1,0 +1,76 @@
+# fewwords Contract Pack: Sales / GTM Agents
+# For: Outbound automation (Ruzo, Clay-adjacent), signal-fed
+#      prospecting, deal-intel briefing, stalled-deal recovery
+#
+# Compliance: GDPR, CAN-SPAM, CASL, internal compliance on
+#             outbound volume + personalization quality
+#
+# The workflow grit: signal detection, account enrichment,
+# fit scoring, buying-committee mapping, personalized message
+# generation, rep review gating. Every silent-skip in this
+# shape lands a low-personalization blast on a real rep's
+# pipeline and erodes response rates across the list.
+#
+# Usage:
+#   fewwords run agent_trace.json --config contracts/sales.yml
+
+# --- Safety rails ---
+banned_tools:
+  - send_email_without_review     # never hit the wire without rep approval
+  - bulk_enrich_without_consent   # data-privacy guardrail
+  - override_opt_out               # respect opt-outs globally
+  - delete_contact                 # contacts are retained for audit
+
+# --- Required workflow steps ---
+required_tools:
+  - detect_funding_signal          # signal must exist before outreach
+  - enrich_account                 # firmographic enrichment is mandatory
+  - score_account_fit              # fit threshold gates the send
+
+# --- Budget + retry controls ---
+max_retries: 3
+max_tool_repeat: 5
+cost_budget_usd: 5.00
+
+# --- Require-prior-work: the core silent-skip defense ---
+# Message generation is the terminal tool; it must not fire
+# without the discovery work completed first. This is what
+# catches "agent blasts generic message with no enrichment."
+requires_prior_work:
+  generate_personalized_message:
+    required:
+      - detect_funding_signal
+      - enrich_account
+      - score_account_fit
+    min_distinct: 3
+  queue_for_rep_review:
+    required:
+      - generate_personalized_message
+    min_distinct: 1
+
+# --- Schemas (prevent silent empties) ---
+schemas:
+  enrich_account:
+    type: object
+    required: [industry, employee_count]
+    minProperties: 2
+  score_account_fit:
+    type: object
+    required: [score, tier]
+  generate_personalized_message:
+    type: object
+    required: [subject, personalization_score]
+    properties:
+      personalization_score:
+        type: number
+        minimum: 0.3    # below this is a template dump, not personalized
+
+# --- Dangerous input patterns (prompt injection on enrichment) ---
+dangerous_input_patterns:
+  generate_personalized_message:
+    - 'ignore\s+previous'
+    - 'exfiltrate'
+
+# --- Analysis ---
+intent: true
+cascade: true

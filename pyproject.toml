@@ -1,0 +1,80 @@
+[project]
+name = "fewwords"
+version = "0.1.0"
+description = "Stop your AI agent from doing something stupid. Deterministic trajectory contracts for production AI agents."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Abhishek Vyas", email = "abhishekvyas02032001@gmail.com" }]
+keywords = ["llm", "agents", "evaluation", "langgraph", "observability", "fewwords", "ai-safety", "guardrails"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
+dependencies = [
+    "langgraph>=1.0.0",
+    "langchain-core>=0.3.0",
+    "pydantic>=2.10.0",
+    "loguru>=0.7.0",
+    "networkx>=3.4.0",
+    "numpy>=2.2.0",
+    "httpx>=0.28.0",
+    "pyyaml>=6.0.0",
+    "opentelemetry-sdk>=1.30.0",
+    "opentelemetry-semantic-conventions-ai>=0.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "hypothesis>=6.125.0",
+    "mypy>=1.14.0",
+    "types-networkx>=3.4.0",
+    "ruff>=0.9.0",
+    "types-PyYAML>=6.0.0",
+]
+
+[project.scripts]
+fewwords = "trajeval.cli:main"
+trajeval = "trajeval.cli:main"
+
+[project.urls]
+Homepage = "https://fewword-ai.fly.dev"
+Documentation = "https://github.com/abhishek5878/fewwords#readme"
+Source = "https://github.com/abhishek5878/fewwords"
+Issues = "https://github.com/abhishek5878/fewwords/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fewwords", "src/trajeval"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Conservative ruleset on the public release: real correctness errors
+# (E4/E7/E9 + pyflakes + pycodestyle warnings + bugbear). Cosmetic
+# nags (E501 line length, SIM, UP, S110, F541, B905-zip-strict) are
+# off because the code in this snapshot ships verbatim from the
+# private engine and tightening style here would create churn against
+# an internal source of truth. Stricter rules can be opt-in for
+# public contributors who extend the surface.
+select = ["E4", "E7", "E9", "F", "W", "B"]
+ignore = ["B008", "B904", "B905", "F541"]

@@ -1,0 +1,58 @@
+# fewwords Contract Pack: Legal Agents
+# For: Legal research assistants, contract drafters, case
+#      management bots, due diligence agents, compliance checkers
+#
+# Compliance: Bar association rules, attorney-client privilege,
+#             conflict of interest rules, citation accuracy
+#
+# The workflow grit: privilege protection, conflict checks before
+# engagement, citation verification, jurisdiction-specific rules,
+# confidentiality classifications.
+#
+# Usage:
+#   fewwords run agent_trace.json --config contracts/legal.yml
+
+# --- Safety rails ---
+banned_tools:
+  - file_court_document      # never file without attorney review
+  - send_to_opposing_counsel # privilege risk
+  - delete_case_file         # case files are permanent
+  - waive_privilege          # only attorneys can waive privilege
+
+# --- Required workflow steps ---
+required_tools:
+  - check_conflicts          # conflict of interest check before any work
+
+# --- Budget controls ---
+cost_budget_usd: 5.00
+max_retries: 2
+
+# --- Schema expectations ---
+schemas:
+  search_precedent:
+    type: object
+    required: [cases]
+    properties:
+      cases:
+        type: array
+  draft_document:
+    type: object
+    required: [document_id, status]
+    properties:
+      document_id:
+        type: string
+      status:
+        type: string
+
+# --- Behavioral contracts ---
+contracts:
+  - check_conflicts before draft_document
+  - search_precedent before draft_document
+  - never call file_court_document
+  - never call waive_privilege
+  - never call send_to_opposing_counsel
+  - whenever draft_document then flag_for_review
+
+# --- Analysis ---
+intent: true
+cascade: true

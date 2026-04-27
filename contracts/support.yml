@@ -1,0 +1,57 @@
+# fewwords Contract Pack: Customer Support Agents
+# For: Intercom bots, Zendesk agents, chat support, voice agents,
+#      ticket resolution, refund processing
+#
+# Compliance: GDPR, CCPA, SLA agreements
+#
+# The workflow grit: escalation rules, refund limits, identity
+# verification before account changes, SLA timing, PII handling.
+#
+# Usage:
+#   fewwords run agent_trace.json --config contracts/support.yml
+
+# --- Safety rails ---
+banned_tools:
+  - delete_account           # never delete, only deactivate
+  - share_internal_notes     # internal notes must not reach customer
+  - bypass_escalation        # escalation rules exist for a reason
+  - modify_billing_without_auth  # billing changes need verification
+
+# --- Required workflow steps ---
+required_tools:
+  - verify_identity          # always verify before account access
+
+# --- Budget controls ---
+cost_budget_usd: 2.00
+max_retries: 3
+
+# --- Schema expectations ---
+schemas:
+  lookup_ticket:
+    type: object
+    required: [ticket_id, status]
+    properties:
+      ticket_id:
+        type: string
+      status:
+        type: string
+  process_refund:
+    type: object
+    required: [refund_id, amount]
+    properties:
+      refund_id:
+        type: string
+      amount:
+        type: number
+
+# --- Behavioral contracts ---
+contracts:
+  - verify_identity before lookup_account
+  - verify_identity before process_refund
+  - never call delete_account
+  - never call share_internal_notes
+  - whenever process_refund then send_confirmation
+
+# --- Analysis ---
+intent: true
+cascade: true

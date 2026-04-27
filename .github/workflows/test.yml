@@ -1,0 +1,53 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-type-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff
+        run: ruff check .
+
+      # Mypy intentionally skipped in public CI: the public bundle
+      # is a curated subset of an internal source tree, so type-checks
+      # against the full surface (including modules that only ship in
+      # the private engine) need a config we do not maintain here.
+      # Internal CI runs ``mypy --strict``; if you contribute a PR
+      # that touches typed surfaces, mypy will be required there.
+
+      - name: Quickstart verdict
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trajeval.action import load_config, run_checks
+          from trajeval.adapters.auto import auto_detect
+
+          trace = auto_detect(
+              json.loads(Path('examples/quickstart/simple_agent.trace.json').read_text())
+          ).trace
+          config = load_config(Path('examples/quickstart/simple_agent.trajeval.yml'))
+          result = run_checks(trace, config)
+          print(f'{result.passed}/{result.total} checks passed ({result.all_passed=})')
+          assert result.all_passed, 'quickstart regressed'
+          PY

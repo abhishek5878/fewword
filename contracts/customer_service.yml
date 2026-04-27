@@ -1,0 +1,92 @@
+# fewwords Contract Pack: Customer Service Agents
+# For: Support chatbots, refund / cancellation agents, claim
+#      adjusters, account-modification assistants, retail-CSAT
+#      bots, airline change/refund agents
+#
+# Prevents the incidents that actually happened:
+#   - Air Canada bereavement-fare refund hallucinated (Feb 2024), agent
+#     promised a policy that didn't exist; airline held liable for the
+#     refund the agent invented
+#   - Refunds processed before identity verification
+#   - Compensation offered before the user asked (proactive promise)
+#   - Account modifications with permissive "sure" / "ok" consent
+#     instead of explicit (yes)
+#
+# Usage:
+#   fewwords run support_trace.json --config contracts/customer_service.yml
+
+# --- Safety rails ---
+banned_tools:
+  # Common-shape exfil / fraud paths
+  - "*delete_user*"
+  - "*delete_account*"
+  - "*export_user_data*"
+  - "send_email_external"      # never send to addresses outside the tenant
+
+# --- Required workflow steps ---
+required_tools:
+  - verify_user_identity       # always authenticate before any account action
+
+# --- HITL confirmation (literal-(yes), covers Air Canada-style cases) ---
+# Customer-modifying writes need explicit affirmative consent. The
+# strict mode rejects "sure" / "okay" / "agreed" because customer-
+# service policy text generally says "explicit (yes) confirmation."
+strict_consent_only: true
+require_user_consent_before:
+  - process_refund
+  - cancel_order
+  - cancel_subscription
+  - modify_order
+  - update_payment_method
+  - update_shipping_address
+  - issue_credit
+  - apply_compensation
+  - close_account
+
+# --- Retry / repetition controls ---
+max_retries: 3
+max_tool_repeat: 5
+stop_on_error: true
+
+# --- Schema expectations ---
+schemas:
+  verify_user_identity:
+    type: object
+    required: [verified, user_id]
+    properties:
+      verified:
+        type: boolean
+  lookup_order:
+    type: object
+    required: [order_id]
+  process_refund:
+    type: object
+    required: [status, amount, reason]
+    properties:
+      status:
+        type: string
+      amount:
+        type: number
+
+# --- Behavioral contracts ---
+# Identity-first ordering: every account-modifying tool comes after
+# a successful verify_user_identity in the trace. Fail-loud if not.
+contracts:
+  - verify_user_identity before process_refund
+  - verify_user_identity before cancel_order
+  - verify_user_identity before cancel_subscription
+  - verify_user_identity before modify_order
+  - verify_user_identity before update_payment_method
+  - verify_user_identity before close_account
+  - lookup_order before process_refund        # know what you're refunding
+  - lookup_order before cancel_order
+  - lookup_order before modify_order
+  - check_policy before send_policy_response  # Air Canada lesson, verify the policy before quoting it
+  - never call delete_user
+  - never call export_user_data
+
+# --- Analysis ---
+intent: true
+cascade: true
+check_pii: true                 # SSN / cards / DOB leakage protection
+fault_test: true

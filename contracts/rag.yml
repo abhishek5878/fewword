@@ -1,0 +1,80 @@
+# fewwords Contract Pack: RAG Agents
+# For: Retrieval-augmented chatbots, doc-QA agents, internal
+#      knowledge assistants, citation-first research tools,
+#      enterprise RAG platforms
+#
+# Compliance: citation accuracy, grounding requirements, no-
+#             answer-without-retrieve for high-trust domains
+#             (legal/medical/compliance-sensitive).
+#
+# The workflow grit: retrieval must happen BEFORE synthesis,
+# citations must map to retrieved documents (not fabricated),
+# empty retrieval must not be summarized as "based on my
+# research..." The failure mode LLM-judge scores green every
+# time: fluent answer, hollow citations.
+#
+# Usage:
+#   fewwords run agent_trace.json --config contracts/rag.yml
+
+# --- Safety rails ---
+banned_tools:
+  - fabricate_citation             # never manufacture a source
+  - cite_unretrieved_document      # citation must come from a prior retrieve
+
+# --- Required workflow steps ---
+required_tools:
+  - retrieve                       # retrieve-before-answer is mandatory
+
+# --- Budget + retry controls ---
+max_retries: 3
+max_tool_repeat: 5
+cost_budget_usd: 1.50
+
+# --- Require-prior-work: retrieve-before-answer ---
+requires_prior_work:
+  synthesize_answer:
+    required:
+      - retrieve
+    min_distinct: 1
+  cite_sources:
+    required:
+      - retrieve
+    min_distinct: 1
+  write_report:
+    required:
+      - retrieve
+    min_distinct: 1
+
+# --- Schemas (catch empty-retrieval-then-fluent-answer) ---
+schemas:
+  retrieve:
+    type: object
+    required: [documents]
+    properties:
+      documents:
+        type: array
+        minItems: 1                 # empty retrieval is a failure, not a valid state
+  synthesize_answer:
+    type: object
+    required: [answer, source_count]
+    properties:
+      source_count:
+        type: integer
+        minimum: 1                  # answer must name at least one source
+  cite_sources:
+    type: object
+    required: [citations]
+    properties:
+      citations:
+        type: array
+        minItems: 1
+
+# --- Dangerous input patterns ---
+dangerous_input_patterns:
+  retrieve:
+    - 'ignore\s+previous'
+    - 'exfiltrate'
+
+# --- Analysis ---
+intent: true
+cascade: true

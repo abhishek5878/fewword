@@ -1,0 +1,73 @@
+# fewwords Contract Pack: Browser Agents
+# For: Browser-Use, Stagehand, ScrapeGraphAI, Playwright-driven
+#      agents, Anthropic Computer Use, OpenAI Operator-style agents
+#
+# Prevents the incidents that actually happen at the browser layer:
+#   - Agent purchases / submits forms without listing details first
+#   - Agent enters PII into the wrong domain (phishing-like trap)
+#   - Agent runs eval() / fetch() to data-exfiltrate
+#   - Agent loops on the same URL when the page errors
+#
+# Usage:
+#   fewwords run browser_trace.json --config contracts/browser_agent.yml
+
+# --- Safety rails ---
+banned_tools:
+  - "*eval*"                 # browser eval / page.evaluate of attacker JS
+  - "*document_cookie*"      # exfil via cookie read
+  - "execute_javascript"     # blanket-block raw JS execution; whitelist via custom config
+  - "set_clipboard"          # exfil via clipboard
+  - "send_keys_password"     # never type passwords; agent should ask user
+
+# --- Required workflow steps ---
+required_tools:
+  - navigate                 # always navigate to a URL before clicking / extracting
+
+# --- HITL confirmation (literal-(yes) before any commit-style action) ---
+# Browser agents commit unrecoverable side effects (purchase, submit form,
+# send message). These require explicit consent to mirror what a human
+# would do, review the form, then click "submit".
+strict_consent_only: true
+require_user_consent_before:
+  - submit_form
+  - purchase
+  - place_order
+  - send_message
+  - send_email
+  - book
+
+# --- Retry / repetition controls ---
+max_retries: 3
+max_tool_repeat: 5            # 6+ retries on the same URL is a loop
+stop_on_error: true           # don't proceed after a 4xx/5xx page
+
+# --- Schema expectations ---
+schemas:
+  navigate:
+    type: object
+    required: [url, status]
+    properties:
+      url:
+        type: string
+      status:
+        type: integer
+  extract_content:
+    type: object
+    required: [text]
+  click:
+    type: object
+    required: [success]
+
+# --- Behavioral contracts ---
+contracts:
+  - navigate before extract_content
+  - navigate before click
+  - extract_content before submit_form     # see the form before submitting
+  - extract_content before purchase        # see the order summary first
+  - never call execute_javascript
+  - never call set_clipboard
+
+# --- Analysis ---
+intent: true
+cascade: true
+check_pii: true

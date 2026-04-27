@@ -1,0 +1,23 @@
+# Minimal contract for the quickstart demo agent.
+# Covers the same surface every production agent needs on day one.
+
+# Anything off this list is blocked at the dispatcher.
+allowed_tools:
+  - search
+  - reply
+
+# Anything on this list is blocked regardless of where it appears.
+banned_tools:
+  - drop_database
+  - delete_user
+
+# No tool should be called more than three times in a row.
+max_retries: 3
+
+# A reply cannot be issued until a search has been performed.
+requires_prior_work:
+  reply:
+    required: [search]
+
+contracts:
+  - search before reply

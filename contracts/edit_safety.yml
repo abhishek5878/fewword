@@ -1,0 +1,46 @@
+# fewwords Contract Pack: Edit Safety
+# For: Code agents that edit files (Claude Code, Cursor, Aider, Copilot CLI)
+#
+# Prevents the "blind edit" failure class, agent modifies files without first
+# reading them. Complements contracts/code_agents.yml (which bans destructive
+# tools) with a rule on the positive side: you must have looked at code before
+# you change it.
+#
+# Caught by this pack in the April 2026 Claude Code degradation post-mortem:
+#   - recent_01_blind_edit  , Edit, Edit  (no prior Read/Grep)
+#   - recent_02_rapid_edits , 4× Edit thrash, never read
+#   - recent_03_interrupted , Edit, Edit (user interrupted before research)
+#   - recent_05_no_research , Edit, Edit, Bash (closes the shape/anomaly slip)
+#
+# NOT caught (by design, requires golden-trace / judge layer):
+#   - Bug 3 terseness regression, tool sequence unchanged, output quality drops
+#
+# Usage:
+#   fewwords run agent_trace.json --config contracts/edit_safety.yml
+#
+# Stack with code_agents.yml for full coverage of destructive-tool + blind-edit
+# failure modes.
+
+agent_id: "claude_code"
+version: "1.0"
+
+# Core behavioural rules (compiled to LTL assertions by ContractCompiler):
+#   - "Read before Edit" → every Edit must be graph-reachable from a prior Read
+#   - "max 15 tool calls per run" → belt-and-suspenders against runaway thrash
+rules:
+  - Read before Edit
+  - max 15 tool calls per run
+
+# Standard-schema mirror of the rules above, readable by load_config /
+# run_checks (the ActionConfig path) in addition to the ContractCompiler.
+# The two surfaces are kept consistent: any change here should also update
+# the rules block above (and vice versa).
+contracts:
+  - Read before Edit
+max_tool_repeat: 15
+
+safety:
+  # No banned tools here, see contracts/code_agents.yml for destructive-tool
+  # globs (drop_*, truncate_*, rm_rf_*, destroy_*, etc.).  Stack both packs for
+  # full code-agent coverage.
+  banned_tools: []

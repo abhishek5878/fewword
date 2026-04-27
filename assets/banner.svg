@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="fewwords — stop your AI agent from doing something stupid">
+  <rect width="1200" height="300" fill="#0a0e14"/>
+
+  <!-- Brand wordmark -->
+  <text x="600" y="148" text-anchor="middle"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+        font-size="104" font-weight="700" fill="#ffffff" letter-spacing="-2">fewwords</text>
+
+  <!-- Tagline -->
+  <text x="600" y="200" text-anchor="middle"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+        font-size="22" font-weight="400" fill="#9aa5b1">Stop your AI agent from doing something stupid.</text>
+
+  <!-- Receipts strip -->
+  <text x="600" y="248" text-anchor="middle"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+        font-size="14" font-weight="400" fill="#5c6975">80% audit agreement on tau-bench  •  0.14ms median check  •  no AI grading the AI  •  MIT</text>
+</svg>

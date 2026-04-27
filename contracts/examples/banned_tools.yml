@@ -1,0 +1,9 @@
+# Example: block destructive tools outright.
+# The banned-tools list is the simplest primitive — a single key, a
+# name match, and the Gate fires before the dispatcher ever sees it.
+
+banned_tools:
+  - drop_database
+  - truncate_table
+  - delete_user
+  - delete_workspace

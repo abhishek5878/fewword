@@ -1,0 +1,87 @@
+# fewwords Contract Pack: Data-Pipeline Agents
+# For: ETL / ELT agents, data-transformation bots, text-to-SQL
+#      assistants, schema-aware analysts, warehouse copilots
+#
+# Compliance: data-governance, schema-drift detection, PII flow
+#             tracking, no-drop-without-audit requirements
+#
+# The workflow grit: validate before transform, schema linking
+# before SQL generation, lineage preservation, empty-result
+# detection (the silent "pipeline succeeded" failure). The
+# class of bug LLM-judge never catches is "upstream schema
+# drifted, agent quietly produced {}, downstream thinks it's
+# working."
+#
+# Usage:
+#   fewwords run agent_trace.json --config contracts/data_pipeline.yml
+
+# --- Safety rails ---
+banned_tools:
+  - drop_table                     # never drop, deprecate+migrate
+  - drop_database
+  - truncate_table
+  - delete_migration
+  - override_schema_check
+
+# --- Required workflow steps ---
+required_tools:
+  - validate_schema                # no transform without validation
+  - table_selection                # schema linking before SQL gen
+
+# --- Budget + retry controls ---
+max_retries: 3
+max_tool_repeat: 5
+cost_budget_usd: 3.00
+
+# --- Require-prior-work: the schema-linking defense ---
+requires_prior_work:
+  generate_sql:
+    required:
+      - search_knowledge
+      - table_selection
+    min_distinct: 2
+  transform_data:
+    required:
+      - validate_schema
+    min_distinct: 1
+  load_data:
+    required:
+      - transform_data
+    min_distinct: 1
+
+# --- Schemas (catch the empty-array-success failure) ---
+schemas:
+  extract_data:
+    type: object
+    required: [rows, schema]
+    properties:
+      rows:
+        type: array
+        minItems: 1                 # empty extract != success
+  transform_data:
+    type: object
+    required: [rows]
+    properties:
+      rows:
+        type: array
+        minItems: 1
+  generate_sql:
+    type: object
+    required: [sql, tables_referenced]
+    properties:
+      tables_referenced:
+        type: array
+        minItems: 1                 # SQL must touch at least one known table
+
+# --- Dangerous input patterns (SQL injection + prompt injection) ---
+dangerous_input_patterns:
+  execute_sql:
+    - '\bDROP\s+(TABLE|DATABASE|SCHEMA)\b'
+    - '\bTRUNCATE\s+TABLE\b'
+    - '\bGRANT\s+ALL\b'
+  generate_sql:
+    - 'ignore\s+previous'
+
+# --- Analysis ---
+intent: true
+cascade: true

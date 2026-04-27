@@ -1,0 +1,53 @@
+# fewwords contract: PocketOS-shape protection
+#
+# Reconstructs the rule that would have blocked the Apr 26, 2026 PocketOS
+# incident: an AI agent (Cursor + Anthropic Opus 4.6) found a Railway CLI
+# token in an unrelated credentials file, then used it to delete a
+# production database volume via a single GraphQL mutation. 9 seconds.
+# The agent confessed in writing afterward to violating every safety
+# rule it had been given. fewwords would have blocked the call.
+#
+# Run:
+#   fewwords run examples/incidents/pocketos_drop_database.trace.json \
+#     --config examples/incidents/pocketos_drop_database.fewwords.yml
+
+# Hard ban on destructive Railway / cloud-platform operations by name.
+banned_tools:
+  - "*volumeDelete*"
+  - "*delete_volume*"
+  - "*drop*"
+  - "*destroy*"
+  - "*terminate*"
+
+# Critically: any shell command containing destructive GraphQL mutations,
+# rm -rf, or DROP DATABASE / DROP TABLE patterns is blocked at the
+# dispatcher even when the tool name itself is innocuous (`shell`).
+# This is the rule that catches the actual PocketOS call: a curl piping
+# `volumeDelete` into Railway's GraphQL endpoint.
+dangerous_input_patterns:
+  shell:
+    - 'volumeDelete'
+    - 'mutation\s*\{\s*(?:volumeDelete|deleteVolume|drop\w*)'
+    - 'rm\s+-rf\s+/'
+    - 'DROP\s+(?:DATABASE|TABLE|SCHEMA)'
+    - 'TRUNCATE\s+TABLE'
+
+# Behavioral contract: never invoke any tool whose name resolves to a
+# delete-volume call, regardless of argument shape.
+contracts:
+  - never call volumeDelete
+  - never call delete_volume
+  - never call drop_database
+
+# Required workflow: any time `shell` runs a curl against an
+# infrastructure GraphQL endpoint, a hitl_approve MUST have happened
+# first. (Enforced via dangerous_input_patterns + a separate
+# require_user_consent_before in production setups.)
+require_user_consent_before:
+  - shell
+
+# Retry / repetition controls keep the agent from running multiple
+# destructive variants if one is blocked.
+max_retries: 1
+max_tool_repeat: 2
+stop_on_error: true

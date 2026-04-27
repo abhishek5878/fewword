@@ -1,0 +1,19 @@
+# Example: block schema-thin outputs like `{"results": []}`.
+# Agents often return syntactically-valid but semantically-empty
+# JSON. A minItems / minLength gate is a cheap deterministic check.
+
+schemas:
+  search:
+    type: object
+    properties:
+      results:
+        type: array
+        minItems: 1
+    required: [results]
+  reply:
+    type: object
+    properties:
+      message:
+        type: string
+        minLength: 20
+    required: [message]
