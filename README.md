@@ -172,7 +172,6 @@ fewwords is **harness**, the human grip on the loop. Most of the tools below are
 | **Guardrails AI / NeMo Guardrails** | Per-turn input/output validation | They check one turn. fewwords checks the *trajectory*. A lazy agent that skips `validate_payment` and goes straight to `submit_payment` passes every per-turn check; the trajectory contract catches it. |
 | **Pydantic AI** | Schema validation on tool I/O | Schema-only. fewwords handles ordering + sequence + postconditions on top. Composable. |
 | **Datadog LLM / Langfuse / Helicone** | Observability dashboards | They tell you *what happened*. fewwords decides *whether it should have*, before it runs. |
-| **Bento (YC P26)** | Real-time trace monitoring | They detect *after* execution. fewwords blocks *before* at the dispatcher (PreToolUse hook point). Run them together, fewwords blocks, Bento monitors what got through. |
 | **Vanta / Drata / Secureframe** | Policy documentation + point-in-time attestation | They document policies; fewwords enforces them. Vanta consumes fewwords's signed receipts as continuous evidence inside the SOC 2 report. |
 | **OpenAI / Anthropic safety layers** | First-party safety in the model | Conflicted (vendor grades itself; the same conflict-of-interest argument the 2008 ratings agencies lost). fewwords is third-party. |
 | **Big 4 (Deloitte / PwC / EY)** | SOC 2 / SOX attestation services | Services-shaped, $250K-engagement-shaped. fewwords is the runtime they license under their attestation services. Acquirer pool, not competitor. |
