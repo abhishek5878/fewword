@@ -29,8 +29,27 @@ Useful when you want a one-shot probe rather than a full
 Regression runner. Every `*.yml` under the directory is a
 (trace + config + expected-verdict) scenario.
 
-## Notes
+## `fewwords init`
 
-`fewwords init` and `fewwords discover` are documented in the
-private source. They depend on the contract-suggestion engine
-which stays invite-only — email for access if you need them.
+Auto-write a starter `.trajeval.yml` from the current repo. Detects the
+agent framework (LangGraph, OpenAI, OTel, LiteLLM, AutoGen, LlamaIndex),
+reads any trace JSON / JSONL files under conventional paths
+(`./traces/`, `./logs/`, `./tmp/traces/`), mines banned-tool inferences
+from destructive-keyword names, builds an allowed-tool list from observed
+calls, and writes the result with a commented rationale per rule.
+
+```bash
+fewwords init
+fewwords init --path ./my-agent/
+fewwords init --traces ./recent-runs/
+```
+
+## `fewwords discover`
+
+Records traces to `.trajeval/traces/` while your agent runs, then
+synthesizes contracts once the threshold is met (default 10 traces).
+Use the `Discovery` context manager for hands-off integration.
+
+```bash
+fewwords discover --threshold 10
+```

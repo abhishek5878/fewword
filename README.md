@@ -15,10 +15,10 @@
 LLM-as-judge asks another AI if your AI looked okay. fewwords checks what your AI actually did against the rules you wrote. No AI grading the AI. Sub-millisecond. Works with whatever agent stack you're already on.
 
 ```bash
-pip install fewwords
+pip install git+https://github.com/abhishek5878/fewwords.git
 ```
 
-Five minutes from install to a pre-commit gate that catches structural drift. The first run tells you the agent worked. The hundredth run tells you it still does.
+Five minutes from install to a pre-commit gate that catches structural drift. The first run tells you the agent worked. The hundredth run tells you it still does. PyPI publish lands once the first five paying teams validate the product.
 
 ---
 
@@ -49,7 +49,7 @@ Every rule is a YAML key. No prose. No 14-key DSL. No LLM in the path producing 
 ## 5-minute quickstart
 
 ```bash
-pip install fewwords
+pip install git+https://github.com/abhishek5878/fewwords.git
 ```
 
 Auto-write a starter config from your repo's framework signals + any traces under `./traces/` or `./logs/`:
@@ -208,7 +208,7 @@ We reconstructed 14 documented production AI agent incidents as traces and ran f
 
 **Industry-specific regulatory (1):** TCPA consent-bypass outbound (FTC v. Air AI, Mar 24 2026 settlement)
 
-Full reconstructions + raw traces + per-incident YAML rules: [docs/prove-it.md](docs/prove-it.md). The hosted version with clickable per-trace explorer is at [fewword-ai.fly.dev/prove-it](https://fewword-ai.fly.dev/prove-it) (early access).
+Full reconstructions + raw traces + per-incident YAML rules: [docs/prove-it.md](docs/prove-it.md). The hosted version with clickable per-trace explorer is at [fewword-ai.fly.dev/prove](https://fewword-ai.fly.dev/prove).
 
 **Try the PocketOS reconstruction yourself:**
 
@@ -231,7 +231,7 @@ We'd rather you see these now than have them surface later.
 - **Coverage today is 26%** of the violation patterns in Sierra's τ-bench. The 26% we cover, we dominate. The 74% we don't, we're building toward: roadmap to 60% by year-end.
 - **The audit was done by the founder.** External blind raters are being commissioned; Fleiss' kappa across all three publishes by **2026-05-15**, before the public leaderboard launches.
 - **No paid LOI from an underwriter yet.** Insurance integration is a forecast, not a booking.
-- **Hosted dashboard is in early access.** The full benchmark UI at `fewword-ai.fly.dev/benchmarks` and `fewword-ai.fly.dev/prove-it` is invite-only today. Email for a tour. The raw τ-bench leaderboard ships fully public Q3 2026.
+- **Hosted dashboard is partially public, partially early-access.** The benchmark UI at `fewword-ai.fly.dev/benchmarks` and the incident explorer at `fewword-ai.fly.dev/prove` are public — link directly. The multi-tenant Ledger dashboard (`/dashboard/tenant`) is invite-only during early access; email for a tour. The fully-reproducible τ-bench leaderboard with multi-rater Fleiss' kappa lands by 2026-05-15.
 - **This is a curated public snapshot of an internal engine.** The internal repo has stricter CI (mypy --strict, full-coverage pytest, drift baselines, multi-tenant ledger). The public bundle is the customer-installable subset: SDK, adapters, contract grammar, guard runtime, attestation, vertical packs, and every module the CLI subcommands need. Some advanced surfaces (multi-tenant audit ledger, hosted leaderboard, customer-specific YAML packs) are invite-only.
 
 ---

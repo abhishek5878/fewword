@@ -6,11 +6,15 @@ All tests are fast and in-memory — no I/O.
 
 from __future__ import annotations
 
+import functools
+
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from trajeval.assertions.core import (
+    Severity,
+    ViolationError,
     cost_within,
     latency_within,
     max_depth,
@@ -19,6 +23,7 @@ from trajeval.assertions.core import (
     no_cycles,
     no_duplicate_arg_call,
     no_retry_storm,
+    severity,
     tool_call_count,
     tool_must_precede,
     total_tool_calls,
@@ -679,19 +684,16 @@ class TestNoDuplicateArgCall:
 # Severity system — gap 7 fix
 # ---------------------------------------------------------------------------
 
-import functools
-from trajeval.assertions.core import Severity, ViolationError, severity
-
 
 class TestSeverity:
     def test_severity_ordering(self) -> None:
         assert Severity.P0 < Severity.P1 < Severity.P2
 
     def test_p0_is_highest_urgency(self) -> None:
-        assert Severity.P0 == min(Severity)
+        assert min(Severity) == Severity.P0
 
     def test_p2_is_lowest_urgency(self) -> None:
-        assert Severity.P2 == max(Severity)
+        assert max(Severity) == Severity.P2
 
 
 class TestViolationError:
@@ -750,8 +752,11 @@ class TestSeverityDecorator:
         assert "original message" in str(exc_info.value)
 
     def test_name_appears_in_error(self) -> None:
-        fn = severity(lambda t: (_ for _ in ()).throw(AssertionError("x")),
-                      level=Severity.P2, name="my-rule")
+        fn = severity(
+            lambda t: (_ for _ in ()).throw(AssertionError("x")),
+            level=Severity.P2,
+            name="my-rule",
+        )
         with pytest.raises(ViolationError) as exc_info:
             fn(_simple_trace())
         assert "my-rule" in str(exc_info.value)
@@ -765,9 +770,7 @@ class TestSeverityDecorator:
             level=Severity.P0,
             name="no-destroy",
         )
-        bad_trace = _trace(
-            [_node("n1", tool_name="destroy_all")], []
-        )
+        bad_trace = _trace([_node("n1", tool_name="destroy_all")], [])
         with pytest.raises(ViolationError) as exc_info:
             guarded(bad_trace)
         assert exc_info.value.severity == Severity.P0
@@ -801,6 +804,7 @@ def _simple_trace() -> Trace:
 # ===========================================================================
 # no_retry_storm — Gap 4 fix
 # ===========================================================================
+
 
 def _retry_node(
     node_id: str, tool_name: str, tool_input: dict[str, object]
@@ -857,8 +861,7 @@ class TestNoRetryStorm:
 
     def test_error_includes_tool_name_and_run_length(self) -> None:
         nodes = [
-            _retry_node(f"n{i}", "fetch_data", {"url": "http://x"})
-            for i in range(5)
+            _retry_node(f"n{i}", "fetch_data", {"url": "http://x"}) for i in range(5)
         ]
         with pytest.raises(AssertionError, match="fetch_data") as exc:
             no_retry_storm(_trace(nodes, []), max_consecutive=2)
@@ -911,10 +914,7 @@ class TestNoRetryStorm:
 
     def test_default_threshold_is_3(self) -> None:
         """4 identical consecutive calls should fail with default threshold."""
-        nodes = [
-            _retry_node(f"n{i}", "search", {"q": "same"})
-            for i in range(4)
-        ]
+        nodes = [_retry_node(f"n{i}", "search", {"q": "same"}) for i in range(4)]
         with pytest.raises(AssertionError):
             no_retry_storm(_trace(nodes, []))
 
@@ -992,9 +992,13 @@ class TestValidateToolOutputs:
 
     def test_validates_nested_properties(self) -> None:
         nodes = [
-            _schema_node("n0", "book", {
-                "booking": {"id": "abc", "status": 123},
-            })
+            _schema_node(
+                "n0",
+                "book",
+                {
+                    "booking": {"id": "abc", "status": 123},
+                },
+            )
         ]
         schemas = {
             "book": {
@@ -1013,9 +1017,7 @@ class TestValidateToolOutputs:
             validate_tool_outputs(_trace(nodes, []), schemas)
 
     def test_validates_array_items(self) -> None:
-        nodes = [
-            _schema_node("n0", "search", {"results": ["ok", 42, "fine"]})
-        ]
+        nodes = [_schema_node("n0", "search", {"results": ["ok", 42, "fine"]})]
         schemas = {
             "search": {
                 "type": "object",
@@ -1032,9 +1034,7 @@ class TestValidateToolOutputs:
 
     def test_extra_keys_allowed_by_default(self) -> None:
         """Keys not in 'properties' are ignored — no additionalProperties check."""
-        nodes = [
-            _schema_node("n0", "search", {"results": [], "extra_field": True})
-        ]
+        nodes = [_schema_node("n0", "search", {"results": [], "extra_field": True})]
         schemas = {
             "search": {
                 "type": "object",
@@ -1061,7 +1061,9 @@ class TestValidateToolOutputs:
 
     def test_error_includes_node_id_and_tool_name(self) -> None:
         nodes = [_schema_node("n42", "fetch", {"data": 123})]
-        schemas = {"fetch": {"type": "object", "properties": {"data": {"type": "string"}}}}
+        schemas = {
+            "fetch": {"type": "object", "properties": {"data": {"type": "string"}}}
+        }
         with pytest.raises(AssertionError, match="n42.*fetch"):
             validate_tool_outputs(_trace(nodes, []), schemas)
 

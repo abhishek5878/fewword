@@ -35,6 +35,7 @@ import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import UTC
 from typing import Any
 
 from trajeval.analysis.consistency import ConsistencyResult, pass_k
@@ -42,13 +43,11 @@ from trajeval.analysis.graph import build_graph
 from trajeval.analysis.metrics import TraceMetrics, compute_metrics
 from trajeval.analysis.workflow import CoverageReport, WorkflowGraph, workflow_coverage
 from trajeval.assertions.core import (
-    latency_within,
     must_visit,
     tool_must_precede,
     tool_output_schema,
 )
 from trajeval.sdk.models import Trace, TraceEdge, TraceNode
-
 
 # ---------------------------------------------------------------------------
 # Pipeline tracer — records TrajEval analysis calls as TraceNodes
@@ -356,7 +355,7 @@ def _run_pipeline_once(trace: Trace) -> Trace:
     tracer = PipelineTracer()
 
     # Stage 1: build_graph
-    graph = tracer.call("build_graph", build_graph, trace)
+    tracer.call("build_graph", build_graph, trace)
 
     # Stage 2: compute_metrics
     metrics: TraceMetrics = tracer.call("compute_metrics", compute_metrics, trace)
@@ -446,7 +445,7 @@ def _assert_metrics_match(meta_trace: Trace, expected: dict[str, float]) -> None
 
 # Default assertion set applied to every trace in the corpus during self-eval.
 _DEFAULT_ASSERTIONS: list[tuple[str, Callable[[Trace], None]]] = [
-    ("no_cycles", lambda t: None),   # placeholder — real import would be no_cycles
+    ("no_cycles", lambda t: None),  # placeholder — real import would be no_cycles
     ("max_depth_10", lambda t: None),  # placeholder — real import would be max_depth
 ]
 
@@ -464,6 +463,6 @@ def _safe_repr(obj: Any, max_len: int = 300) -> dict[str, object]:
 
 def _now_iso() -> str:
     """Return the current UTC time in ISO 8601 format."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    return datetime.now(tz=timezone.utc).isoformat()
+    return datetime.now(tz=UTC).isoformat()
