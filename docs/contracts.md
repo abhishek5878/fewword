@@ -50,7 +50,7 @@ Free-form English clauses. Each clause is compiled to a Python
 expression, JSON Schema, or LTL formula at load time. Clauses are
 always deterministic; there is no LLM in the check path.
 
-## `tools.<name>.{requires, postcondition}` (R4.2b)
+## `tools.<name>.{requires, postcondition}`
 
 Per-tool typed-state contracts. Three pieces compose:
 

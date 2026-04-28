@@ -1,4 +1,4 @@
-"""Unit tests for automated contract synthesis (Gap 12)."""
+"""Unit tests for automated contract synthesis."""
 
 from __future__ import annotations
 

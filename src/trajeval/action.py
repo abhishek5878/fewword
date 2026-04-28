@@ -585,7 +585,7 @@ def run_checks(trace: Trace, config: ActionConfig) -> ActionResult:
                 message=str(exc),
             ))
 
-    # R4.2b — postcondition replay with typed symbolic state.
+    # Postcondition replay with typed symbolic state.
     # One CheckResult per (tool, kind) pair, matching the existing pattern.
     if config.tools:
         replay_state_checks(trace, config.tools, checks)

@@ -1,4 +1,4 @@
-"""Typed symbolic state for trajectory contracts (R4.2b).
+"""Typed symbolic state for trajectory contracts (postconditions primitive).
 
 A :class:`SymbolicState` is the runtime object threaded through
 ``run_checks`` / ``guard.check`` to express contracts of the form
@@ -206,7 +206,7 @@ def _parse_list(text: str, *, raw: str) -> list[StateValue]:
 
 
 # ---------------------------------------------------------------------------
-# Tool config (R4.2b YAML extension)
+# Tool config (typed-state YAML extension)
 # ---------------------------------------------------------------------------
 
 

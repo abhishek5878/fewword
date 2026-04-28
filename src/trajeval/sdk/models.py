@@ -157,7 +157,7 @@ class Trace(BaseModel):
         default_factory=dict,
         description="Arbitrary customer-defined tags",
     )
-    # Agent configuration snapshot (Gap 2: configuration sensitivity)
+    # Agent configuration snapshot — captures the model + temperature + tool set
     config: AgentConfig | None = Field(
         default=None,
         description=(

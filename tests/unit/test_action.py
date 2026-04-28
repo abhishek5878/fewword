@@ -298,7 +298,7 @@ def test_cli_run_failure_exits_one() -> None:
 from trajeval.action import CheckResult  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# R4.2b — tools.<name>.{requires, postcondition} via load_config
+# tools.<name>.{requires, postcondition} via load_config
 # ---------------------------------------------------------------------------
 
 
@@ -349,7 +349,7 @@ def test_load_config_rejects_malformed_tools_predicate() -> None:
 
 
 # ---------------------------------------------------------------------------
-# R4.2b Phase 3 — postcondition replay with typed symbolic state
+# Postcondition replay with typed symbolic state
 # ---------------------------------------------------------------------------
 
 

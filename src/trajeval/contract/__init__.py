@@ -2,8 +2,8 @@
 
 This is the public-bundle subset of the private trajeval.contract
 package. The full package includes a YAML contract compiler, registry,
-and cache; those internals stay invite-only. State primitives (R4.2b)
-ship publicly because they're how customers author tool postconditions
+and cache; those internals stay invite-only. State primitives ship
+publicly because they're how customers author tool postconditions
 in .trajeval.yml.
 """
 

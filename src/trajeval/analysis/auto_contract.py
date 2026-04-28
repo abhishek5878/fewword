@@ -1,4 +1,4 @@
-"""Automated contract synthesis from production traces — Gap 12.
+"""Automated contract synthesis from production traces.
 
 Assertions require developer foresight. This module mines production
 failure traces for recurring patterns and proposes assertion candidates.
