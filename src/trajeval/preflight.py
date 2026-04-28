@@ -1,7 +1,7 @@
 """Schema-first pre-flight checks — validate before any trace exists.
 
-The cold-start problem (Gap 17): when you deploy a new agent with zero
-traces, TrajEval has nothing to evaluate.  Pre-flight checks fix this by
+The cold-start problem: when you deploy a new agent with zero traces,
+fewwords has nothing to evaluate.  Pre-flight checks fix this by
 analyzing the agent's *declared* tool list against the active assertion
 set and surfacing contradictions before the first run.
 

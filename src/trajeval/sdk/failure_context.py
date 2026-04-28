@@ -1,7 +1,8 @@
-"""Failure context injection for the Experiment Loop.
+"""Failure context injection for self-correction loops.
 
-Phase 2 of the Experiment Loop: turn assertion failures into structured
-context that a well-designed LangGraph agent can consume on its next run.
+Turns assertion failures into structured context that a well-designed
+LangGraph agent (or any retry-aware orchestrator) can consume on its
+next run.
 
 Usage::
 

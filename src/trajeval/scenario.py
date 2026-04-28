@@ -16,24 +16,22 @@ would layer on:
     belong in the soft-eval layer, not here).
   * multi-turn user simulation.
 
-For now the harness is the minimum we need to turn
-``examples/traces/incidents/`` + ``contracts/incidents/`` into a
-pre-release regression suite runnable in CI.
+For now the harness is the minimum we need to point a (trace + config + expected-verdict) tuple at the runner and turn it into a pre-release regression suite runnable in CI.
 
 Usage::
 
     from trajeval.scenario import run_scenario
 
-    result = run_scenario(Path("scenarios/my_scenario.yml"))
+    result = run_scenario(Path("my_scenario.yml"))
     assert result.passed, result.summary
 
 YAML format::
 
-    name: Replit DROP DATABASE must be blocked
-    trace: ../examples/traces/incidents/replit_drop_database.json
-    config: ../contracts/incidents/replit.yml
-    must_fire: [banned:drop_database]   # required — names of checks that MUST fail
-    must_not_fire: []                    # optional — names of checks that MUST pass
+    name: PocketOS shell mutation must be blocked
+    trace: ../examples/incidents/pocketos_drop_database.trace.json
+    config: ../examples/incidents/pocketos_drop_database.fewwords.yml
+    must_fire: [dangerous_input, user_consent]   # required — names of checks that MUST fail
+    must_not_fire: []                            # optional — names of checks that MUST pass
 """
 from __future__ import annotations
 
