@@ -88,7 +88,8 @@ def _resolve_key(key: bytes | str | None) -> bytes:
 
 def _sign_payload(payload: dict[str, Any], key: bytes) -> str:
     """HMAC-SHA256 signature over the canonical JSON payload."""
-    return hmac.new(key, _canonical_json(payload).encode("utf-8"), hashlib.sha256).hexdigest()
+    msg = _canonical_json(payload).encode("utf-8")
+    return hmac.new(key, msg, hashlib.sha256).hexdigest()
 
 
 def sign_receipt(
@@ -103,17 +104,30 @@ def sign_receipt(
     key: bytes | str | None = None,
 ) -> AttestationReceipt:
     """Construct a signed :class:`AttestationReceipt`."""
-    body = {
+    resolved_reasons: list[str] = list(reasons or [])
+    resolved_timestamp: float = timestamp if timestamp is not None else time.time()
+    resolved_trace_digest: str = trace_digest(trace_dict)
+    resolved_contract_digest: str = contract_digest(contract_dict)
+    body: dict[str, str | list[str] | float] = {
         "trace_id": trace_id,
-        "trace_digest": trace_digest(trace_dict),
-        "contract_digest": contract_digest(contract_dict),
+        "trace_digest": resolved_trace_digest,
+        "contract_digest": resolved_contract_digest,
         "verdict": verdict,
-        "reasons": list(reasons or []),
-        "timestamp": timestamp if timestamp is not None else time.time(),
+        "reasons": resolved_reasons,
+        "timestamp": resolved_timestamp,
         "prev_signature": prev_signature,
     }
     sig = _sign_payload(body, _resolve_key(key))
-    return AttestationReceipt(**body, signature=sig)
+    return AttestationReceipt(
+        trace_id=trace_id,
+        trace_digest=resolved_trace_digest,
+        contract_digest=resolved_contract_digest,
+        verdict=verdict,
+        reasons=resolved_reasons,
+        timestamp=resolved_timestamp,
+        prev_signature=prev_signature,
+        signature=sig,
+    )
 
 
 def verify_receipt(receipt: AttestationReceipt, key: bytes | str | None = None) -> bool:
